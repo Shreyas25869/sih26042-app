@@ -14,6 +14,7 @@ import "./features/student/quiz-player-2.css";
 import "./features/student/lesson-player-2.css";
 import "./features/student/student-progress-2.css";
 import "./features/offline/offline.css";
+import "./features/ai/model-panel.css";
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
