@@ -1,0 +1,7 @@
+import { Link } from "react-router-dom";
+import { ArrowRight, BookOpen, CircleHelp, Layers3, Languages, Mic, Sparkles } from "lucide-react";
+import TeacherLanguageWorkflow from "./TeacherLanguageWorkflow";
+
+export default function TeacherStudioPage() {
+  return <div className="page"><div className="page-header"><div><div className="eyebrow">Teacher workspace</div><h1>Content Studio</h1><p className="muted">Create classroom material, localise it, and prepare it for offline learners.</p></div></div><div className="studio-grid"><Link className="studio-card" to="/teacher/lessons/new"><BookOpen/><div><strong>Lesson builder</strong><span>Write a lesson with topic, grade and subject.</span></div><ArrowRight/></Link><Link className="studio-card" to="/teacher/quizzes/new"><CircleHelp/><div><strong>Quiz builder</strong><span>Create assessment questions for students.</span></div><ArrowRight/></Link><Link className="studio-card" to="/teacher/flashcards/new"><Layers3/><div><strong>Flashcard builder</strong><span>Prepare revision material for offline use.</span></div><ArrowRight/></Link></div><TeacherLanguageWorkflow/><div className="studio-footer card"><Sparkles size={19}/><div><strong>AI + audio integration point</strong><p>When your teammate's trained models are ready, connect them to the translator and speech services without changing the teacher workflow.</p></div><span><Languages size={15}/> multilingual</span><span><Mic size={15}/> voice ready</span></div></div>;
+}
