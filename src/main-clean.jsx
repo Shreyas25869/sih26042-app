@@ -6,6 +6,7 @@ import "./styles.css";
 import "./features/teacher/teacher.css";
 import "./features/teacher/dashboard.css";
 import "./features/student/tutor/tutor.css";
+import "./features/student/student-journey.css";
 import "./features/offline/offline.css";
 
 createRoot(document.getElementById("root")).render(
