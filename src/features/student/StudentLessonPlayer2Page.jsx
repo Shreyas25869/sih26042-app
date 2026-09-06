@@ -1,32 +1,67 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Bot, CheckCircle2, Clock3, Headphones, Languages, Pause, Play, Volume2, WifiOff } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useApp } from "../../app/AppContext";
 import { speakText, stopSpeaking } from "../../services/speech";
 
-const lessonSections = (lesson) => [
-  { id: "start", label: "Start here", title: "What will you learn?", text: lesson.description || `Today we will learn about ${lesson.title}. Connect the idea to something you see around you.` },
-  { id: "learn", label: "Learn", title: "The main idea", text: `Read this idea slowly and think of one example from your own community. ${lesson.title} becomes easier when you connect the concept to everyday life.` },
-  { id: "try", label: "Try it", title: "Your turn", text: "Pause and explain the idea in your own words. Then name one thing you can observe, draw or discuss with your teacher." },
-];
+const lessonSections = (lesson) => {
+  if (Array.isArray(lesson?.sections) && lesson.sections.length) {
+    return lesson.sections.map((section, index) => ({
+      id: section.id || `section-${index + 1}`,
+      label: section.label || `Step ${index + 1}`,
+      title: section.title || section.label || `Learning step ${index + 1}`,
+      text: section.text || "Read this section and connect it to something you know.",
+    }));
+  }
+
+  return [
+    { id: "start", label: "Start here", title: "What will you learn?", text: lesson.description || `Today we will learn about ${lesson.title}. Connect the idea to something you see around you.` },
+    { id: "learn", label: "Learn", title: "The main idea", text: `Read this idea slowly and think of one example from your own community. ${lesson.title} becomes easier when you connect the concept to everyday life.` },
+    { id: "try", label: "Try it", title: "Your turn", text: "Pause and explain the idea in your own words. Then name one thing you can observe, draw or discuss with your teacher." },
+  ];
+};
 
 export default function StudentLessonPlayer2Page() {
   const { state, actions } = useApp();
   const { lessonId } = useParams();
-  const navigate = useNavigate();
   const lesson = useMemo(() => state.lessons.find((item) => item.id === lessonId) || state.lessons[0], [state.lessons, lessonId]);
   const sections = useMemo(() => lesson ? lessonSections(lesson) : [], [lesson]);
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    setStep(0);
+    setPlaying(false);
+    stopSpeaking();
+    return () => stopSpeaking();
+  }, [lessonId]);
+
   if (!lesson) return <div className="page"><div className="lesson2-empty"><BookOpenFallback/><h2>No lesson available</h2><p>Create a lesson from the teacher workspace first.</p></div></div>;
-  const current = sections[step];
+  const current = sections[step] || sections[0];
   const done = state.progress.completedLessons.includes(lesson.id);
   const percent = Math.round(((step + 1) / sections.length) * 100);
   const language = state.language === "en" ? "en-IN" : state.language === "san" ? "hi-IN" : `${state.language}-IN`;
 
-  function toggleAudio() { if (playing) { stopSpeaking(); setPlaying(false); return; } const ok = speakText(`${current.title}. ${current.text}`, language); if (ok) setPlaying(true); }
-  function complete() { stopSpeaking(); setPlaying(false); actions.completeLesson(lesson.id); }
-  function next() { if (step < sections.length - 1) setStep((value) => value + 1); else complete(); }
+  function toggleAudio() {
+    if (playing) {
+      stopSpeaking();
+      setPlaying(false);
+      return;
+    }
+    const ok = speakText(`${current.title}. ${current.text}`, language);
+    if (ok) setPlaying(true);
+  }
+
+  function complete() {
+    stopSpeaking();
+    setPlaying(false);
+    actions.completeLesson(lesson.id);
+  }
+
+  function next() {
+    if (step < sections.length - 1) setStep((value) => value + 1);
+    else complete();
+  }
 
   return <div className="lesson2 page">
     <div className="lesson2-top"><Link to="/student/lessons" className="back-link"><ArrowLeft size={16}/> All lessons</Link><span className="lesson2-offline"><WifiOff size={14}/> Saved on device</span></div>
