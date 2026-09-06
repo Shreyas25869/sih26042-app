@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, CheckCircle2, CircleHelp, RotateCcw, Trophy, XCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowLeft, CheckCircle2, CircleHelp, RotateCcw, Trophy } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 import { useApp } from "../../app/AppContext";
 
 const questionBank = [
@@ -16,7 +16,8 @@ function saveAttempt(id, score, total) { const key = "sih26042:quiz-attempts"; t
 
 export default function QuizPlayer2Page() {
   const { state, actions } = useApp();
-  const quiz = state.quizzes[0];
+  const { quizId } = useParams();
+  const quiz = state.quizzes.find((item) => item.id === quizId) || state.quizzes[0];
   const questions = useMemo(() => buildQuestions(quiz), [quiz]);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -27,12 +28,12 @@ export default function QuizPlayer2Page() {
 
   if (!quiz) return <div className="page quiz2"><div className="quiz2-empty"><CircleHelp/><h1>No quiz available</h1><p>Create a quiz from the teacher content studio first.</p><Link className="btn btn-primary" to="/student">Back home</Link></div></div>;
 
-  function choose(option) { if (finished) return; setAnswers((old) => ({ ...old, [index]: option })); }
+  function choose(option) { if (!finished) setAnswers((old) => ({ ...old, [index]: option })); }
   function next() { if (index < questions.length - 1) setIndex((i) => i + 1); else { const finalScore = questions.reduce((sum, q, i) => sum + (answers[i] === q.answer ? 1 : 0), 0); actions.saveQuizScore(quiz.id, finalScore); saveAttempt(quiz.id, finalScore, questions.length); setFinished(true); } }
   function restart() { setIndex(0); setAnswers({}); setFinished(false); }
 
   if (finished) return <div className="page quiz2"><div className="quiz2-result card"><div className="quiz2-result-icon"><Trophy/></div><span className="eyebrow">Quiz complete</span><h1>{score}/{questions.length}</h1><p className="muted">{score === questions.length ? "Excellent work! You got every answer right." : score >= Math.ceil(questions.length * .6) ? "Good job. Review the explanations and try again when ready." : "Keep practising. You can retry this quiz anytime."}</p><div className="quiz2-result-bar"><span style={{ width: `${(score / questions.length) * 100}%` }}/></div><div className="quiz2-result-actions"><button className="btn btn-primary" onClick={restart}><RotateCcw size={17}/> Try again</button><Link className="btn btn-secondary" to="/student">Back to learning</Link></div></div></div>;
 
   const selected = answers[index];
-  return <div className="page quiz2"><div className="quiz2-top"><Link to="/student" className="back-link"><ArrowLeft size={16}/> Back to learning</Link><span className="badge">{answered}/{questions.length} answered</span></div><div className="quiz2-hero"><div><span className="eyebrow">Practice check</span><h1>{quiz.title}</h1><p className="muted">Question {index + 1} of {questions.length} · Your progress is saved on this device.</p></div><div className="quiz2-progress"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }}/></div></div><div className="quiz2-layout"><section className="card quiz2-question"><div className="quiz2-question-number">Q{index + 1}</div><h2>{current.text}</h2><div className="quiz2-options">{current.options.map((option, optionIndex) => { const chosen = selected === optionIndex; return <button key={option} className={`quiz2-option ${chosen ? "selected" : ""}`} onClick={() => choose(optionIndex)}><span className="quiz2-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span>{chosen && <CheckCircle2 size={18}/>}</button>; })}</div>{selected !== undefined && <div className="quiz2-feedback"><CheckCircle2 size={18}/><div><strong>Answer selected</strong><span>You can change it before continuing.</span></div></div>}<div className="quiz2-footer"><span>{selected === undefined ? "Choose one answer" : "Ready to continue"}</span><button className="btn btn-primary" disabled={selected === undefined} onClick={next}>{index === questions.length - 1 ? "Finish quiz" : "Next question"}</button></div></section><aside className="quiz2-side card"><span className="eyebrow">Question map</span><div className="quiz2-map">{questions.map((q, i) => <button key={q.id} className={`${i === index ? "current" : ""} ${answers[i] !== undefined ? "answered" : ""}`} onClick={() => setIndex(i)}>{i + 1}</button>)}</div><div className="quiz2-note"><CircleHelp size={17}/><span>No internet is required for this quiz once its content is available locally.</span></div></aside></div></div>;
+  return <div className="page quiz2"><div className="quiz2-top"><Link to="/student/quizzes" className="back-link"><ArrowLeft size={16}/> Back to quizzes</Link><span className="badge">{answered}/{questions.length} answered</span></div><div className="quiz2-hero"><div><span className="eyebrow">Practice check</span><h1>{quiz.title}</h1><p className="muted">Question {index + 1} of {questions.length} · Your progress is saved on this device.</p></div><div className="quiz2-progress"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }}/></div></div><div className="quiz2-layout"><section className="card quiz2-question"><div className="quiz2-question-number">Q{index + 1}</div><h2>{current.text}</h2><div className="quiz2-options">{current.options.map((option, optionIndex) => { const chosen = selected === optionIndex; return <button key={option} className={`quiz2-option ${chosen ? "selected" : ""}`} onClick={() => choose(optionIndex)}><span className="quiz2-letter">{String.fromCharCode(65 + optionIndex)}</span><span>{option}</span>{chosen && <CheckCircle2 size={18}/>}</button>; })}</div>{selected !== undefined && <div className="quiz2-feedback"><CheckCircle2 size={18}/><div><strong>Answer selected</strong><span>You can change it before continuing.</span></div></div>}<div className="quiz2-footer"><span>{selected === undefined ? "Choose one answer" : "Ready to continue"}</span><button className="btn btn-primary" disabled={selected === undefined} onClick={next}>{index === questions.length - 1 ? "Finish quiz" : "Next question"}</button></div></section><aside className="quiz2-side card"><span className="eyebrow">Question map</span><div className="quiz2-map">{questions.map((q, i) => <button key={q.id} className={`${i === index ? "current" : ""} ${answers[i] !== undefined ? "answered" : ""}`} onClick={() => setIndex(i)}>{i + 1}</button>)}</div><div className="quiz2-note"><CircleHelp size={17}/><span>No internet is required for this quiz once its content is available locally.</span></div></aside></div></div>;
 }
