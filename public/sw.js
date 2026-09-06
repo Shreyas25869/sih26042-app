@@ -1,16 +1,14 @@
 const SHELL_CACHE = "sih26042-shell-v2";
 const RUNTIME_CACHE = "sih26042-runtime-v2";
 const CONTENT_CACHE = "sih26042-content-v2";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest"];
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icon-192.svg", "/icon-512.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(
-    keys.filter((key) => ![SHELL_CACHE, RUNTIME_CACHE, CONTENT_CACHE].includes(key)).map((key) => caches.delete(key))
-  )).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => ![SHELL_CACHE, RUNTIME_CACHE, CONTENT_CACHE].includes(key)).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener("fetch", (event) => {
