@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./app/App";
 import "./styles.css";
 import "./features/teacher/teacher.css";
+import "./features/teacher/dashboard.css";
 import "./features/student/tutor/tutor.css";
 import "./features/offline/offline.css";
 
