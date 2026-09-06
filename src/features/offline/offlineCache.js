@@ -3,25 +3,31 @@ const SHELL_CACHE = "sih26042-shell-v2";
 
 function canCache() { return typeof window !== "undefined" && "caches" in window; }
 function contentKey(id) { return `/__sih26042_content__/${encodeURIComponent(id)}`; }
+function itemKey(itemOrId) {
+  if (typeof itemOrId === "string") return itemOrId;
+  const type = itemOrId?.type || "content";
+  const id = itemOrId?.id;
+  return id ? `${type}:${id}` : "";
+}
 
 export async function cacheLearningItem(item) {
-  if (!canCache()) return false;
+  if (!canCache() || !item?.id) return false;
   const cache = await caches.open(CACHE_NAME);
   const payload = new Response(JSON.stringify({ ...item, cachedAt: new Date().toISOString() }), { headers: { "Content-Type": "application/json" } });
-  await cache.put(contentKey(item.id), payload);
+  await cache.put(contentKey(itemKey(item)), payload);
   return true;
 }
 
-export async function removeLearningItem(id) {
+export async function removeLearningItem(itemOrId) {
   if (!canCache()) return false;
   const cache = await caches.open(CACHE_NAME);
-  return cache.delete(contentKey(id));
+  return cache.delete(contentKey(itemKey(itemOrId)));
 }
 
-export async function hasLearningItem(id) {
+export async function hasLearningItem(itemOrId) {
   if (!canCache()) return false;
   const cache = await caches.open(CACHE_NAME);
-  return Boolean(await cache.match(contentKey(id)));
+  return Boolean(await cache.match(contentKey(itemKey(itemOrId))));
 }
 
 export async function getOfflineContent() {
