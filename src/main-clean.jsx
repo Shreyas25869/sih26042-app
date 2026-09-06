@@ -15,6 +15,7 @@ import "./features/student/lesson-player-2.css";
 import "./features/student/student-progress-2.css";
 import "./features/offline/offline.css";
 import "./features/ai/model-panel.css";
+import "./features/ai/model-health.css";
 import "./features/content/content-studio-4.css";
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
