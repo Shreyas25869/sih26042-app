@@ -1,0 +1,11 @@
+{
+  "name": "SIH 26042 Offline Learning",
+  "short_name": "SIH 26042",
+  "description": "Offline-first learning for rural classrooms",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f8fb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "lang": "en"
+}
