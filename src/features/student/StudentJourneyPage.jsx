@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { BookOpen, Bot, CheckCircle2, ChevronRight, CircleHelp, Layers3, Languages, Sparkles, WifiOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useApp } from "../../app/AppContext";
+import { loadClassroom } from "../teacher/classroomStore";
 
 export default function StudentJourneyPage() {
   const { state } = useApp();
@@ -11,6 +12,20 @@ export default function StudentJourneyPage() {
   const progress = Math.round((completed / total) * 100);
   const nextLesson = state.lessons.find((lesson) => !state.progress.completedLessons.includes(lesson.id)) || state.lessons[0];
   const recentLessons = useMemo(() => state.lessons.slice(0, 3), [state.lessons]);
+  const classroom = useMemo(() => loadClassroom(), []);
+  const assignedContent = useMemo(() => {
+    return classroom.assignments
+      .map((assignment) => {
+        const lesson = state.lessons.find((item) => item.id === assignment.contentId);
+        const quiz = state.quizzes.find((item) => item.id === assignment.contentId);
+        const content = lesson || quiz;
+        if (!content) return null;
+        return { ...assignment, content, contentType: lesson ? "lesson" : "quiz" };
+      })
+      .filter(Boolean)
+      .slice(-6)
+      .reverse();
+  }, [classroom.assignments, state.lessons, state.quizzes]);
 
   return (
     <div className="student-journey page">
@@ -37,6 +52,37 @@ export default function StudentJourneyPage() {
         <JourneyStat icon={Languages} value={state.language.toUpperCase()} label="Learning language" />
       </div>
 
+      {assignedContent.length > 0 && (
+        <section className="card journey-assigned-card">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">Teacher plan</span>
+              <h2>Assigned for this classroom</h2>
+              <p className="muted">Learning tasks prepared on this device. They remain available offline.</p>
+            </div>
+            <span className="badge">{assignedContent.length} tasks</span>
+          </div>
+          <div className="journey-assigned-list">
+            {assignedContent.map((assignment) => {
+              const isQuiz = assignment.contentType === "quiz";
+              const to = isQuiz
+                ? `/student/quizzes?quiz=${encodeURIComponent(assignment.content.id)}`
+                : `/student/lessons/${encodeURIComponent(assignment.content.id)}`;
+              return (
+                <Link className="journey-assigned-item" to={to} key={assignment.id}>
+                  <div className="journey-assigned-icon">{isQuiz ? <CircleHelp /> : <BookOpen />}</div>
+                  <div>
+                    <span>{isQuiz ? "Quiz" : "Lesson"} · {assignment.content.level || "Learning"}</span>
+                    <strong>{assignment.content.title}</strong>
+                  </div>
+                  <ChevronRight />
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       <section className="journey-stepper card">
         <div className="section-heading"><div><span className="eyebrow">Simple learning loop</span><h2>Learn → Practice → Revise → Grow</h2></div></div>
         <div className="journey-steps">
@@ -53,7 +99,7 @@ export default function StudentJourneyPage() {
           {nextLesson ? <>
             <div className="next-lesson-meta"><span className="tag">{nextLesson.level}</span><span>{nextLesson.minutes} min</span></div>
             <p>{nextLesson.description}</p>
-            <Link className="btn btn-primary" to="/student/lessons">Open lesson <ChevronRight size={17} /></Link>
+            <Link className="btn btn-primary" to={`/student/lessons/${encodeURIComponent(nextLesson.id)}`}>Open lesson <ChevronRight size={17} /></Link>
           </> : <p>Come back when new learning content is available.</p>}
         </section>
 
@@ -73,7 +119,7 @@ export default function StudentJourneyPage() {
         <div className="journey-lessons">
           {recentLessons.map((lesson) => {
             const done = state.progress.completedLessons.includes(lesson.id);
-            return <Link className={`journey-lesson ${done ? "complete" : ""}`} to="/student/lessons" key={lesson.id}>
+            return <Link className={`journey-lesson ${done ? "complete" : ""}`} to={`/student/lessons/${encodeURIComponent(lesson.id)}`} key={lesson.id}>
               <div className="journey-lesson-icon">{done ? <CheckCircle2 /> : <BookOpen />}</div>
               <div><span>{lesson.level} · {lesson.minutes} min</span><strong>{lesson.title}</strong><p>{lesson.description}</p></div>
               <ChevronRight className="journey-chevron" />
