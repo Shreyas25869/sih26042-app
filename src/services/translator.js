@@ -1,3 +1,5 @@
+import { getModelConfig, postModel } from "./modelAdapter";
+
 const API_URL = import.meta.env.VITE_TRANSLATOR_API_URL || "";
 
 export async function translateText({ text, sourceLanguage = "auto", targetLanguage }) {
@@ -5,19 +7,13 @@ export async function translateText({ text, sourceLanguage = "auto", targetLangu
   if (!value) return "";
   if (!targetLanguage || sourceLanguage === targetLanguage) return value;
 
-  // Optional remote translator. The core app stays usable offline.
-  if (API_URL) {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: value, sourceLanguage, targetLanguage }),
-    });
-    if (!response.ok) throw new Error("Translation service unavailable");
-    const data = await response.json();
-    return data.translation || data.translatedText || value;
+  const config = getModelConfig();
+  const url = API_URL || config.translatorUrl;
+  if (url) {
+    const data = await postModel(url, { text: value, sourceLanguage, targetLanguage });
+    return data.translation || data.translatedText || data.text || value;
   }
 
-  // Offline dictionary hook. Add trained/local language packs here.
   const key = `${sourceLanguage}:${targetLanguage}`;
   const dictionary = JSON.parse(localStorage.getItem(`sih26042:translations:${key}`) || "{}");
   return dictionary[value] || value;
