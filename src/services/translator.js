@@ -1,28 +1,5 @@
 import { getModelConfig, postModel } from "./modelAdapter";
-
-const API_URL = import.meta.env.VITE_TRANSLATOR_API_URL || "";
-
-export async function translateText({ text, sourceLanguage = "auto", targetLanguage }) {
-  const value = String(text || "").trim();
-  if (!value) return "";
-  if (!targetLanguage || sourceLanguage === targetLanguage) return value;
-
-  const config = getModelConfig();
-  const url = API_URL || config.translatorUrl;
-  if (url) {
-    const data = await postModel(url, { text: value, sourceLanguage, targetLanguage });
-    return data.translation || data.translatedText || data.text || value;
-  }
-
-  const key = `${sourceLanguage}:${targetLanguage}`;
-  const dictionary = JSON.parse(localStorage.getItem(`sih26042:translations:${key}`) || "{}");
-  return dictionary[value] || value;
-}
-
-export function saveOfflineTranslation({ text, translation, sourceLanguage, targetLanguage }) {
-  const key = `${sourceLanguage}:${targetLanguage}`;
-  const storageKey = `sih26042:translations:${key}`;
-  const dictionary = JSON.parse(localStorage.getItem(storageKey) || "{}");
-  dictionary[String(text).trim()] = String(translation).trim();
-  localStorage.setItem(storageKey, JSON.stringify(dictionary));
-}
+const API_URL=import.meta.env.VITE_TRANSLATOR_API_URL||"";
+function offlineLookup(text,sourceLanguage,targetLanguage){const key=`${sourceLanguage}:${targetLanguage}`;try{const dictionary=JSON.parse(localStorage.getItem(`sih26042:translations:${key}`)||"{}");return dictionary[text]||text}catch{return text}}
+export async function translateText({text,sourceLanguage="auto",targetLanguage}){const value=String(text||"").trim();if(!value)return "";if(!targetLanguage||sourceLanguage===targetLanguage)return value;const url=API_URL||getModelConfig().translatorUrl;if(url){try{const data=await postModel(url,{text:value,sourceLanguage,targetLanguage});return data.translation||data.translatedText||data.text||value}catch{return offlineLookup(value,sourceLanguage,targetLanguage)}}return offlineLookup(value,sourceLanguage,targetLanguage)}
+export function saveOfflineTranslation({text,translation,sourceLanguage,targetLanguage}){const key=`${sourceLanguage}:${targetLanguage}`;const storageKey=`sih26042:translations:${key}`;try{const dictionary=JSON.parse(localStorage.getItem(storageKey)||"{}");dictionary[String(text).trim()]=String(translation).trim();localStorage.setItem(storageKey,JSON.stringify(dictionary))}catch{}}
