@@ -10,6 +10,7 @@ import "./features/teacher/classroom-management-2.css";
 import "./features/student/tutor/tutor.css";
 import "./features/student/student-journey.css";
 import "./features/student/quiz-player-2.css";
+import "./features/student/lesson-player-2.css";
 import "./features/offline/offline.css";
 
 createRoot(document.getElementById("root")).render(
