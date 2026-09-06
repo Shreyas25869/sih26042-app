@@ -18,5 +18,6 @@ import "./features/ai/model-panel.css";
 import "./features/ai/model-health.css";
 import "./features/content/content-studio-4.css";
 import "./features/system/production-readiness.css";
+import "./features/system/showcase.css";
 if (import.meta.env.PROD && "serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {}); }); }
 createRoot(document.getElementById("root")).render(<React.StrictMode><BrowserRouter><App /></BrowserRouter></React.StrictMode>);
